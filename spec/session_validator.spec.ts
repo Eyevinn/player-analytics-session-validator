@@ -129,6 +129,6 @@ describe('session-validator module', () => {
 
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
-    expect(response.body).toEqual('{"Events":[{"Message":"No queue type specified"}]}');
+    expect(response.body).toEqual('{"Events":[{"Message":"No database type specified"}]}');
   });
 });
