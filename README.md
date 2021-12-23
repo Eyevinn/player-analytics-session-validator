@@ -4,7 +4,7 @@
 
 To be able to build and run the project locally a things need to be set first.
 
- - A `.npmrc` file is needed with the following content:
+- A `.npmrc` file is needed with the following content:
 
 ``` txt
 @eyevinn:registry=https://npm.pkg.github.com
