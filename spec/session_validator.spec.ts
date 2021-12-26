@@ -1,4 +1,4 @@
-import * as main from '../';
+import * as main from '../index';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import { DynamoDBAdapter } from '@eyevinn/player-analytics-shared';
@@ -117,7 +117,6 @@ describe('session-validator module', () => {
     const event = request;
     event.path = '/';
     const response = await main.handler(event);
-    console.log(JSON.stringify(response));
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(response.body).toEqual('{}');
