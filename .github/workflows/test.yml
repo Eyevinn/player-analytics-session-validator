@@ -1,0 +1,26 @@
+name: Run tests
+on:
+  push:
+    branches-ignore:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies, run tests and build
+        env:
+          PUBLISH_PACKAGES: ${{ secrets.PUBLISH_PACKAGES }}
+        run: |
+          touch .npmrc
+          echo @eyevinn:registry=https://npm.pkg.github.com >> .npmrc
+          echo //npm.pkg.github.com/:_authToken=${PUBLISH_PACKAGES} >> .npmrc
+          npm ci
+          npm test
