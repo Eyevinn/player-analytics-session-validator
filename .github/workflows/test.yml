@@ -24,4 +24,3 @@ jobs:
           echo //npm.pkg.github.com/:_authToken=${PUBLISH_PACKAGES} >> .npmrc
           npm ci
           npm test
-          npm run build
