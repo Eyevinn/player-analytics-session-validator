@@ -8,7 +8,7 @@ export class EventDB {
     this.logger = logger;
   }
 
-  /*
+  /**
    *
    * @param {string} sessionId of a session
    * @param {string} tableName the table to get the event from

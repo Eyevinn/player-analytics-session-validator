@@ -45,9 +45,7 @@ export default class Validator {
    * @returns list of validated events
    */
   validateEventOrder(eventsList: any[]): any[] {
-    if('Message' in eventsList[0]) {
-      return eventsList;
-    }
+    if('Message' in eventsList[0]) return eventsList;
     let events: any[] = [];
     try {
       eventsList[0]['valid'] = true;
@@ -94,9 +92,7 @@ export default class Validator {
       },
       body: {},
     };
-    if (!eventsList) {
-      return response;
-    }
+    if (!eventsList) return response;
     response.body = { Events: this.validateEventOrder(eventsList) };
     return response;
   }
