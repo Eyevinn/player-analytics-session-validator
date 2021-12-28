@@ -2,7 +2,12 @@ import { ALBResult, ALBEvent } from 'aws-lambda';
 import Logger from '../logging/logger';
 import { EventDB } from '../lib/EventDB';
 import Validator from '../lib/Validator';
-import { responseHeaders, generateResponseStatus, generateValidResponseBody, generateInvalidResponseBody } from '../lib/route-helpers';
+import {
+  responseHeaders,
+  generateResponseStatus,
+  generateValidResponseBody,
+  generateInvalidResponseBody,
+} from '../lib/route-helpers';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const m = event.path.match(/\/session\/(\S+)/);
@@ -14,7 +19,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       statusDescription: 'OK',
       headers: responseHeaders,
       body: '{}',
-    }
+    };
     let requestHost: string = 'unknown';
     if (event.headers && event.headers['host']) {
       requestHost = event.headers['host'];
