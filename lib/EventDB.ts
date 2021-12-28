@@ -14,7 +14,7 @@ export class EventDB {
    * @param {string} tableName the table to get the event from
    *
   */
-  async getEvents(sessionId: string, tableName: string): Promise<any[]> {
+  async getEvents(sessionId: string, tableName: string): Promise<any> {
     try {
       if (!this.DBAdapter) {
         let dbAdapter: any;
@@ -27,7 +27,7 @@ export class EventDB {
             break;
           default:
             this.logger.warn(`No database type specified`);
-            return [{ Message: 'No database type specified' }];
+            return undefined;
         }
         this.DBAdapter = new dbAdapter(this.logger);
       }
