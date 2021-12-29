@@ -14,7 +14,7 @@ export class EventDB {
    * @param {string} tableName the table to get the event from
    *
   */
-  async getEvents(sessionId: string, tableName: string): Promise<any> {
+  async getEvents(sessionId: string, tableName: string): Promise<any[] | undefined> {
     try {
       if (!this.DBAdapter) {
         let dbAdapter: any;
