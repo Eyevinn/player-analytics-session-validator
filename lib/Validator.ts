@@ -1,5 +1,4 @@
 import winston from 'winston';
-import { validatorResponse } from '../types/interfaces';
 
 export default class Validator {
   logger: winston.Logger;
@@ -45,9 +44,7 @@ export default class Validator {
    * @returns list of validated events
    */
   validateEventOrder(eventsList: any[]): any[] {
-    if('Message' in eventsList[0]) {
-      return eventsList;
-    }
+    if(!eventsList) return eventsList;
     let events: any[] = [];
     try {
       eventsList[0]['valid'] = true;
@@ -77,27 +74,5 @@ export default class Validator {
       this.logger.error(error);
     }
     return events;
-  }
-
-  /**
-   * Method that returns a valid response
-   * @param optional event object
-   */
-  validResponse(eventsList?: any[]): validatorResponse {
-    let response = {
-      statusCode: 200,
-      statusDescription: 'OK',
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Origin',
-      },
-      body: {},
-    };
-    if (!eventsList) {
-      return response;
-    }
-    response.body = { Events: this.validateEventOrder(eventsList) };
-    return response;
   }
 }

@@ -1,4 +1,4 @@
-import * as main from '../index';
+import * as main from '../services/lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import { DynamoDBAdapter } from '@eyevinn/player-analytics-shared';
@@ -56,7 +56,7 @@ describe('session-validator module', () => {
         playhead: 0,
         duration: 0,
         host: 'mock.eyevinn.technology',
-      }
+      },
     ];
     process.env.AWS_REGION = 'us-east-1';
     process.env.DB_TYPE = 'DYNAMODB';
@@ -110,16 +110,22 @@ describe('session-validator module', () => {
       }
     );
     const response = await main.handler(request);
-    expect(response.body).toEqual(JSON.stringify(validatedEvents));
+
+    expect(response.body).toEqual(
+      JSON.stringify({
+        sessionId: '123-214-234',
+        Events: validatedEvents.Events,
+      })
+    );
   });
 
   it('should ignore request if "path" != "/session" ', async () => {
     const event = request;
     event.path = '/';
     const response = await main.handler(event);
-    expect(response.statusCode).toEqual(200);
-    expect(response.statusDescription).toEqual('OK');
-    expect(response.body).toEqual('{}');
+    expect(response.statusCode).toEqual(404);
+    expect(response.statusDescription).toEqual('Not Found');
+    expect(response.body).toEqual('{"message": Not Found}');
   });
 
   it('should return message in requests if "DB_TYPE" env is not set', async () => {
@@ -128,6 +134,6 @@ describe('session-validator module', () => {
 
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
-    expect(response.body).toEqual('{"Events":[{"Message":"No database type specified"}]}');
+    expect(response.body).toEqual('{"sessionId":"123-214-234","message":"Cannot get events from DB"}');
   });
 });

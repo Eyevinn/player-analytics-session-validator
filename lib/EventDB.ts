@@ -8,13 +8,13 @@ export class EventDB {
     this.logger = logger;
   }
 
-  /*
+  /**
    *
    * @param {string} sessionId of a session
    * @param {string} tableName the table to get the event from
    *
   */
-  async getEvents(sessionId: string, tableName: string): Promise<any[]> {
+  async getEvents(sessionId: string, tableName: string): Promise<any[] | undefined> {
     try {
       if (!this.DBAdapter) {
         let dbAdapter: any;
@@ -22,9 +22,12 @@ export class EventDB {
           case 'DYNAMODB':
             dbAdapter = (await import('@eyevinn/player-analytics-shared')).DynamoDBAdapter;
             break;
+          case 'MONGODB':
+            dbAdapter = (await import('@eyevinn/player-analytics-shared')).MongoDBAdapter;
+            break;
           default:
             this.logger.warn(`No database type specified`);
-            return [{ Message: 'No database type specified' }];
+            return undefined;
         }
         this.DBAdapter = new dbAdapter(this.logger);
       }
