@@ -29,12 +29,12 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       requestSessionId,
       `epas_${requestHost}`
     );
-    if (!eventsList) {
-      response.body = JSON.stringify(generateInvalidResponseBody(requestSessionId));
-    } else {
+    if (eventsList) {
       eventsList.sort((a, b) => a.timestamp - b.timestamp);
       const validationResult = validator.validateEventOrder(eventsList);
       response.body = JSON.stringify(generateValidResponseBody(validationResult, requestSessionId));
+    } else {
+      response.body = JSON.stringify(generateInvalidResponseBody(requestSessionId));
     }
     return response as ALBResult;
   }
