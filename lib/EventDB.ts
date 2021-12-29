@@ -31,8 +31,8 @@ export class EventDB {
         }
         this.DBAdapter = new dbAdapter(this.logger);
       }
-       const list = await this.DBAdapter.getItemsBySession({
-        tableName: tableName,
+      const list = await this.DBAdapter.getItemsBySession({
+        tableName: process.env.TABLE_NAME ? process.env.TABLE_NAME : tableName,
         sessionId: sessionId,
       });
       return list;
