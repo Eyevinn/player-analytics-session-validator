@@ -4,6 +4,7 @@
   "description": "",
   "main": "services/lambda.ts",
   "scripts": {
+    "dev": "ts-node services/fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
     "build": "rm -rf build/ && tsc -p tsconfig-build.json"
   },
@@ -33,6 +34,7 @@
     "@eyevinn/player-analytics-shared": "^0.4.2",
     "@types/aws-lambda": "^8.10.86",
     "@types/node": "^16.6.1",
+    "fastify": "^3.25.3",
     "winston": "^3.3.3"
   }
 }
