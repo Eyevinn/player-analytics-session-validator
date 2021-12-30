@@ -26,10 +26,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       requestHost = event.headers['host'];
     }
     let eventDB = new EventDB(Logger);
-    let eventsList = await eventDB.getEvents(
-      requestSessionId,
-      `${TABLE_PREFIX}${requestHost}`
-    );
+    let eventsList = await eventDB.getEvents(requestSessionId);
     if (eventsList) {
       eventsList.sort((a, b) => a.timestamp - b.timestamp);
       const validationResult = validator.validateEventOrder(eventsList);

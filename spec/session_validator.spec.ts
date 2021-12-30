@@ -60,11 +60,13 @@ describe('session-validator module', () => {
     ];
     process.env.AWS_REGION = 'us-east-1';
     process.env.DB_TYPE = 'DYNAMODB';
+    process.env.TABLE_NAME = 'mock-table';
     ddbMock.reset();
   });
   afterEach(() => {
     delete process.env.AWS_REGION;
     delete process.env.DB_TYPE;
+    delete process.env.TABLE_NAME;
   });
 
   it('can sort and validate a list of events', async () => {
