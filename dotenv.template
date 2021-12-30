@@ -1,0 +1,2 @@
+DB_TYPE = <DYNAMODB | MONGODB>
+TABLE_NAME = <table name>

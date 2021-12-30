@@ -8,7 +8,6 @@ import {
   generateValidResponseBody,
   generateInvalidResponseBody,
 } from '../lib/route-helpers';
-import { TABLE_PREFIX } from '@eyevinn/player-analytics-shared';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const m = event.path.match(/\/session\/(\S+)/);
@@ -21,11 +20,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       headers: responseHeaders,
       body: '{}',
     };
-    let requestHost: string = 'unknown';
-    if (event.headers && event.headers['host']) {
-      requestHost = event.headers['host'];
-    }
-    let eventDB = new EventDB(Logger);
+    const eventDB = new EventDB(Logger);
     let eventsList = await eventDB.getEvents(requestSessionId);
     if (eventsList) {
       eventsList.sort((a, b) => a.timestamp - b.timestamp);
