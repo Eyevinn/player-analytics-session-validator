@@ -20,15 +20,8 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       headers: responseHeaders,
       body: '{}',
     };
-    let requestHost: string = 'unknown';
-    if (event.headers && event.headers['host']) {
-      requestHost = event.headers['host'];
-    }
-    let eventDB = new EventDB(Logger);
-    let eventsList = await eventDB.getEvents(
-      requestSessionId,
-      `epas_${requestHost}`
-    );
+    const eventDB = new EventDB(Logger);
+    let eventsList = await eventDB.getEvents(requestSessionId);
     if (eventsList) {
       eventsList.sort((a, b) => a.timestamp - b.timestamp);
       const validationResult = validator.validateEventOrder(eventsList);

@@ -31,7 +31,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@eyevinn/player-analytics-shared": "^0.4.2",
+    "@eyevinn/player-analytics-shared": "^0.4.3",
     "@types/aws-lambda": "^8.10.86",
     "@types/node": "^16.6.1",
     "fastify": "^3.25.3",

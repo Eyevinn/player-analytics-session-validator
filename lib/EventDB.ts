@@ -11,10 +11,10 @@ export class EventDB {
   /**
    *
    * @param {string} sessionId of a session
-   * @param {string} tableName the table to get the event from
+   * @param {string} tableName optional, the table to get the event from
    *
   */
-  async getEvents(sessionId: string, tableName: string): Promise<any[] | undefined> {
+  async getEvents(sessionId: string, tableName?: string): Promise<any[] | undefined> {
     try {
       if (!this.DBAdapter) {
         let dbAdapter: any;
@@ -31,8 +31,8 @@ export class EventDB {
         }
         this.DBAdapter = new dbAdapter(this.logger);
       }
-       const list = await this.DBAdapter.getItemsBySession({
-        tableName: tableName,
+      const list = await this.DBAdapter.getItemsBySession({
+        tableName: tableName ? tableName : process.env.TABLE_NAME,
         sessionId: sessionId,
       });
       return list;
