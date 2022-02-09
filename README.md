@@ -1,5 +1,7 @@
 # player-analytics-session-validator
 
+The Eyevinn Player Analytics (EPAS) is an open sourced framework and specification for tracking events from video players. It is a modular framework where you can pick and choose the modules you need. This is the session validator module that validates the data from the worker and database.
+
 ## AWS
 
 To run the session validator in AWS as a Lambda function and DynamoDB as the database:
