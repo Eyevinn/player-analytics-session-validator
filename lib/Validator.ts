@@ -18,7 +18,7 @@ export default class Validator {
       buffered: ['init', 'loading', 'loaded', 'seeked'],
       seeking: ['init', 'loading', 'loaded', 'buffered'],
       seeked: ['init', 'loading', 'loaded', 'buffered'],
-      bitrate_changed: ['init', 'loading', 'loaded', 'buffered', 'seeked'],
+      bitrate_changed: ['init', 'loading', 'loaded', 'buffered'],
       stopped: ['init', 'loading', 'loaded', 'buffered', 'seeked'],
       error: [
         'init',
@@ -45,6 +45,7 @@ export default class Validator {
    */
   validateEventOrder(eventsList: any[]): any[] {
     if(!eventsList) return eventsList;
+    this.logger.debug(`Number of events: ${eventsList.length}`);
     let events: any[] = [];
     try {
       eventsList[0]['valid'] = true;
