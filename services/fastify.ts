@@ -8,7 +8,7 @@ import {
   generateInvalidResponseBody,
 } from '../lib/route-helpers';
 
-const fastify = require('fastify')()
+const fastify = require('fastify')();
 
 fastify.get("/session/:sessionId", async (request, reply) => {
   const sessionId = request.params.sessionId;
