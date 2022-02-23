@@ -8,25 +8,26 @@ export default class Validator {
     this.logger = logger;
     this.events = {
       // Event name : Non-allowed follow up event(s)
-      init: [
-        'loaded',
-        'seeked',
-        'seeking',
-        'buffered',
-        'buffering',
-        'bitrate_changed',
-        'init',
-        'playing',
-        'paused',
-        'stopped',
-      ],
+      init: ['loaded', 'seeked', 'seeking', 'buffered', 'buffering', 'bitrate_changed', 'init', 'playing', 'paused'],
       heartbeat: ['init'],
       metadata: ['init'],
-      warning: ['init', 'loading'],
-      stopped: ['init', 'loading', 'loaded', 'buffered', 'seeked', 'bitrate_changed', 'stopped'],
-      error: [
+      warning: ['init'],
+      stopped: [
         'init',
         'heartbeat',
+        'loading',
+        'loaded',
+        'buffered',
+        'buffering',
+        'seeked',
+        'bitrate_changed',
+        'stopped',
+        'paused',
+        'warning',
+        'error',
+      ],
+      error: [
+        'init',
         'loading',
         'loaded',
         'playing',
@@ -48,15 +49,14 @@ export default class Validator {
         'loading',
         'playing',
         'paused',
-        'stopped',
         'bitrate_changed',
       ],
       loaded: ['init', 'loading', 'seeked', 'buffered', 'loaded'],
       playing: ['init', 'loading', 'loaded', 'buffered', 'seeked', 'playing'],
-      paused: ['init', 'loading', 'loaded', 'buffered', 'seeked', 'paused', 'stopped'],
-      buffering: ['init', 'loading', 'loaded', 'seeked', 'playing', 'paused', 'buffering', 'stopped'],
+      paused: ['init', 'loading', 'loaded', 'buffered', 'seeked', 'paused'],
+      buffering: ['init', 'loading', 'loaded', 'seeked', 'playing', 'buffering'],
       buffered: ['init', 'loading', 'loaded', 'seeked', 'buffered'],
-      seeking: ['init', 'loading', 'loaded', 'seeking', 'buffered', 'buffering', 'playing', 'paused', 'stopped'],
+      seeking: ['init', 'loading', 'loaded', 'seeking', 'buffered', 'buffering', 'playing'],
       seeked: ['init', 'loading', 'loaded', 'buffered', 'seeked'],
       bitrate_changed: ['init', 'loading', 'loaded', 'buffered', 'bitrate_changed'],
     };
@@ -72,7 +72,11 @@ export default class Validator {
     this.logger.debug(`Number of events: ${eventsList.length}`);
     let events: any[] = [];
     try {
-      eventsList[0]['valid'] = true;
+      if (eventsList[0]['event'] !== 'init') {
+        eventsList[0]['valid'] = false;
+      } else {
+        eventsList[0]['valid'] = true;
+      }
       for (let i = 0; i < eventsList.length; i++) {
         if (i !== eventsList.length - 1) {
           let nextEvent: any = { event: '' };
