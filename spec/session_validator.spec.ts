@@ -174,9 +174,7 @@ describe('session-validator module', () => {
       return Promise.resolve(validTestSequences[4]);
     });
     const response = await main.handler(request);
-    const body = response.body as string;
-    console.log(JSON.stringify(JSON.parse(body), null, 2));
-    expect(body).toEqual(
+    expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
         Events: validatedEvents.Events,
@@ -282,20 +280,50 @@ describe('session-validator module', () => {
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
         { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
-        { valid: false, event: 'buffered', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
-        { valid: false, event: 'buffering', sessionId: '123-214-234', timestamp: 1640193006, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193007, playhead: 0, duration: 0 },
-        { valid: false, event: 'loading', sessionId: '123-214-234', timestamp: 1640193008, playhead: 0, duration: 0 },
-        { valid: true, event: 'metadata', sessionId: '123-214-234', timestamp: 1640193009, playhead: 0, duration: 0 },
+        { valid: false, event: 'unknown', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
+        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
+        { valid: false, event: 'buffered', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
+        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193006, playhead: 0, duration: 0 },
+        { valid: false, event: 'buffering', sessionId: '123-214-234', timestamp: 1640193007, playhead: 0, duration: 0 },
+        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193008, playhead: 0, duration: 0 },
+        { valid: false, event: 'loading', sessionId: '123-214-234', timestamp: 1640193009, playhead: 0, duration: 0 },
+        { valid: true, event: 'metadata', sessionId: '123-214-234', timestamp: 1640193010, playhead: 0, duration: 0 },
       ],
     };
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
       return Promise.resolve(invalidTestSequences[4]);
     });
     const response = await main.handler(request);
-    console.log(response.body);
+    expect(response.body).toEqual(
+      JSON.stringify({
+        sessionId: '123-214-234',
+        Events: validatedEvents.Events,
+      })
+    );
+  });
+
+  it('can validate Invalid Event sequence correctly, example #6', async () => {
+    const validatedEvents = {
+      Events: [
+        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193010, playhead: 0, duration: 0 },
+        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193020, playhead: 0, duration: 0 },
+        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193030, playhead: 0, duration: 0 },
+        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193040, playhead: 0, duration: 0 },
+        { valid: true, event: 'error', sessionId: '123-214-234', timestamp: 1640193050, playhead: 0, duration: 0 },
+        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193060, playhead: 0, duration: 0 },
+        { valid: false, event: 'init', sessionId: '123-214-234', timestamp: 1640193061, playhead: 0, duration: 0 },
+        { valid: false, event: 'loading', sessionId: '123-214-234', timestamp: 1640193062, playhead: 0, duration: 0 },
+        { valid: false, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193063, playhead: 0, duration: 0 },
+        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193070, playhead: 0, duration: 0 },
+        { valid: false, event: 'error', sessionId: '123-214-234', timestamp: 1640193072, playhead: 0, duration: 0 },
+        { valid: false, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193080, playhead: 0, duration: 0 },
+      ],
+    };
+    spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
+      return Promise.resolve(invalidTestSequences[5]);
+    });
+    const response = await main.handler(request);
+    console.log(response.body as string, 9090);
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',

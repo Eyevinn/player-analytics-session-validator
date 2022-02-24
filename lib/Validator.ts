@@ -3,9 +3,18 @@ import winston from 'winston';
 export default class Validator {
   logger: winston.Logger;
   events: any;
+  singleAppearanceEvents: {};
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
+    // Event name : current appearences count
+    this.singleAppearanceEvents = {
+      init: 0,
+      loading: 0,
+      loaded: 0,
+      error: 0,
+      stopped: 0,
+    };
     this.events = {
       // Event name : Non-allowed follow up event(s)
       init: ['loaded', 'seeked', 'seeking', 'buffered', 'buffering', 'bitrate_changed', 'init', 'playing', 'paused'],
@@ -81,15 +90,44 @@ export default class Validator {
         if (i !== eventsList.length - 1) {
           let nextEvent: any = { event: '' };
           nextEvent = eventsList[i + 1];
-          if (this.events[eventsList[i]['event']].includes(nextEvent['event'])) {
+          // Check if next Event is only allowed to appear once
+          if (this.singleAppearanceEvents[nextEvent['event']] !== undefined) {
+            this.singleAppearanceEvents[nextEvent['event']]++;
+            const currentCount = this.singleAppearanceEvents[nextEvent['event']];
+            console.log('single:', currentCount, nextEvent['event']);
+            if (currentCount > 1) {
+              eventsList[i + 1]['valid'] = false;
+              // Add validated event to list
+              events.push({
+                valid: eventsList[i]['valid'],
+                event: eventsList[i]['event'],
+                sessionId: eventsList[i]['sessionId'],
+                timestamp: eventsList[i]['timestamp'],
+                playhead: eventsList[i]['playhead'],
+                duration: eventsList[i]['duration'],
+              });
+              continue;
+            }
+          }
+          // Check if next Event is unknown
+          if (!this.events[nextEvent['event']]) {
+            eventsList[i + 1]['valid'] = false;
+          }
+          // Check if next Event is not suppose to be after current
+          else if (
+            this.events[eventsList[i]['event']] &&
+            this.events[eventsList[i]['event']].includes(nextEvent['event'])
+          ) {
             eventsList[i + 1]['valid'] = false;
           } else {
             eventsList[i + 1]['valid'] = true;
           }
         }
+        // Check if 'init' is not first
         if (eventsList[i]['event'] === 'init' && i > 0) {
           eventsList[i]['valid'] = false;
         }
+        // Add validated event to list
         events.push({
           valid: eventsList[i]['valid'],
           event: eventsList[i]['event'],

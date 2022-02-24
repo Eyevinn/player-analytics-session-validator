@@ -203,7 +203,7 @@ const testEventSequence_5 = [
     host: 'mock.eyevinn.technology',
   },
   {
-    event: 'playing',
+    event: 'unknown',
     sessionId: '123-214-234',
     timestamp: 1640193003,
     playhead: 0,
@@ -211,7 +211,7 @@ const testEventSequence_5 = [
     host: 'mock.eyevinn.technology',
   },
   {
-    event: 'buffered',
+    event: 'playing',
     sessionId: '123-214-234',
     timestamp: 1640193004,
     playhead: 0,
@@ -219,7 +219,7 @@ const testEventSequence_5 = [
     host: 'mock.eyevinn.technology',
   },
   {
-    event: 'seeking',
+    event: 'buffered',
     sessionId: '123-214-234',
     timestamp: 1640193005,
     playhead: 0,
@@ -227,7 +227,7 @@ const testEventSequence_5 = [
     host: 'mock.eyevinn.technology',
   },
   {
-    event: 'buffering',
+    event: 'seeking',
     sessionId: '123-214-234',
     timestamp: 1640193006,
     playhead: 0,
@@ -235,7 +235,7 @@ const testEventSequence_5 = [
     host: 'mock.eyevinn.technology',
   },
   {
-    event: 'stopped',
+    event: 'buffering',
     sessionId: '123-214-234',
     timestamp: 1640193007,
     playhead: 0,
@@ -243,7 +243,7 @@ const testEventSequence_5 = [
     host: 'mock.eyevinn.technology',
   },
   {
-    event: 'loading',
+    event: 'stopped',
     sessionId: '123-214-234',
     timestamp: 1640193008,
     playhead: 0,
@@ -251,19 +251,42 @@ const testEventSequence_5 = [
     host: 'mock.eyevinn.technology',
   },
   {
-    event: 'metadata',
+    event: 'loading',
     sessionId: '123-214-234',
     timestamp: 1640193009,
     playhead: 0,
     duration: 0,
     host: 'mock.eyevinn.technology',
   },
+  {
+    event: 'metadata',
+    sessionId: '123-214-234',
+    timestamp: 1640193010,
+    playhead: 0,
+    duration: 0,
+    host: 'mock.eyevinn.technology',
+  },
 ];
 
+const testEventSequence_6 = [
+  { event: 'init', sessionId: '123-214-234', timestamp: 1640193010, playhead: 0, duration: 0 },
+  { event: 'loading', sessionId: '123-214-234', timestamp: 1640193020, playhead: 0, duration: 0 },
+  { event: 'loaded', sessionId: '123-214-234', timestamp: 1640193030, playhead: 0, duration: 0 },
+  { event: 'playing', sessionId: '123-214-234', timestamp: 1640193040, playhead: 0, duration: 0 },
+  { event: 'error', sessionId: '123-214-234', timestamp: 1640193050, playhead: 0, duration: 0 },
+  { event: 'stopped', sessionId: '123-214-234', timestamp: 1640193060, playhead: 0, duration: 0 },
+  { event: 'init', sessionId: '123-214-234', timestamp: 1640193061, playhead: 0, duration: 0 },
+  { event: 'loading', sessionId: '123-214-234', timestamp: 1640193062, playhead: 0, duration: 0 },
+  { event: 'loaded', sessionId: '123-214-234', timestamp: 1640193063, playhead: 0, duration: 0 },
+  { event: 'playing', sessionId: '123-214-234', timestamp: 1640193070, playhead: 0, duration: 0 },
+  { event: 'error', sessionId: '123-214-234', timestamp: 1640193072, playhead: 0, duration: 0 },
+  { event: 'stopped', sessionId: '123-214-234', timestamp: 1640193080, playhead: 0, duration: 0 },
+];
 export const invalidTestSequences = [
   testEventSequence_1,
   testEventSequence_2,
   testEventSequence_3,
   testEventSequence_4,
   testEventSequence_5,
+  testEventSequence_6,
 ];
