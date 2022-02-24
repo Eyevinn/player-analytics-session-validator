@@ -64,7 +64,7 @@ describe('session-validator module', () => {
   });
 
   it('can validate Valid Event sequence correctly, example #1', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -78,13 +78,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Valid Event sequence correctly, example #2', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'error', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -99,13 +99,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Valid Event sequence correctly, example #3', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -123,13 +123,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Valid Event sequence correctly, example #4', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -150,13 +150,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Valid Event sequence correctly, example #5', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -177,13 +177,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Invalid Event sequence correctly, example #1', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: false, event: 'loading', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: false, event: 'init', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -197,13 +197,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Invalid Event sequence correctly, example #2', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -218,13 +218,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Invalid Event sequence correctly, example #3', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -242,13 +242,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Invalid Event sequence correctly, example #4', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -269,13 +269,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Invalid Event sequence correctly, example #5', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
@@ -297,13 +297,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can validate Invalid Event sequence correctly, example #6', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193010, playhead: 0, duration: 0 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193020, playhead: 0, duration: 0 },
@@ -327,13 +327,13 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
 
   it('can sort and validate a list of events', async () => {
-    const validatedEvents = {
+    const expectedValidatedEvents = {
       Events: [
         { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640191099, playhead: 1, duration: 1 },
         { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193099, playhead: 3, duration: 3 },
@@ -348,7 +348,7 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: validatedEvents.Events,
+        Events: expectedValidatedEvents.Events,
       })
     );
   });
