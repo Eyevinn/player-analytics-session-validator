@@ -94,7 +94,6 @@ export default class Validator {
           if (this.singleAppearanceEvents[nextEvent['event']] !== undefined) {
             this.singleAppearanceEvents[nextEvent['event']]++;
             const currentCount = this.singleAppearanceEvents[nextEvent['event']];
-            console.log('single:', currentCount, nextEvent['event']);
             if (currentCount > 1) {
               eventsList[i + 1]['valid'] = false;
               // Add validated event to list

@@ -323,7 +323,6 @@ describe('session-validator module', () => {
       return Promise.resolve(invalidTestSequences[5]);
     });
     const response = await main.handler(request);
-    console.log(response.body as string, 9090);
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
