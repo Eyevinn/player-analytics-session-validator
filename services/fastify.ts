@@ -10,33 +10,32 @@ import {
 
 const fastify = require('fastify')();
 
-fastify.get("/session/:sessionId", async (request, reply) => {
+fastify.get('/session/:sessionId', async (request, reply) => {
   const sessionId = request.params.sessionId;
   if (!sessionId) {
-    reply
-      .status(400)
-      .headers(responseHeaders)
-      .send({ message: "Bad request" });
+    reply.status(400).headers(responseHeaders).send({ message: 'Bad request' });
     return;
   }
   const validator = new Validator(Logger);
   const eventDB = new EventDB(Logger);
-  const eventsList = await eventDB.getEvents(
-    sessionId,
-    `epas_${request.headers['host']}`
-  );
+  const eventsListRaw = await eventDB.getEvents(sessionId, `epas_${request.headers['host']}`);
   let responseBody;
-  if (eventsList) {
-    eventsList.sort((a, b) => a.timestamp - b.timestamp);
-    const validationResult = validator.validateEventOrder(eventsList);
-    responseBody = generateValidResponseBody(validationResult, sessionId);
+  if (eventsListRaw) {
+    eventsListRaw.sort((a, b) => a.timestamp - b.timestamp);
+    // remove overhead data from event objects
+    const simpleEventsList = eventsListRaw.map((eventObj) => ({
+      event: eventObj.event,
+      sessionId: eventObj.sessionId,
+      timestamp: eventObj.timestamp,
+      playhead: eventObj.playhead,
+      duration: eventObj.duration,
+    }));
+    const validationResult = validator.validateEventOrder(simpleEventsList);
+    responseBody = generateValidResponseBody(sessionId, simpleEventsList, validationResult);
   } else {
     responseBody = generateInvalidResponseBody(sessionId);
   }
-  reply
-    .status(200)
-    .headers(responseHeaders)
-    .send(responseBody);
+  reply.status(200).headers(responseHeaders).send(responseBody);
 });
 
 /**
@@ -56,8 +55,8 @@ const start = async () => {
     await fastify.listen(3001);
     Logger.info(`Server listening on ${fastify.server.address().port}`);
   } catch (err) {
-    Logger.error("Error starting server", err);
+    Logger.error('Error starting server', err);
     process.exit(1);
   }
-}
+};
 start();

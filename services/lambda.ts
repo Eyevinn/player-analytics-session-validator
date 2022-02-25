@@ -21,11 +21,19 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       body: '{}',
     };
     const eventDB = new EventDB(Logger);
-    let eventsList = await eventDB.getEvents(requestSessionId);
-    if (eventsList) {
-      eventsList.sort((a, b) => a.timestamp - b.timestamp);
-      const validationResult = validator.validateEventOrder(eventsList);
-      response.body = JSON.stringify(generateValidResponseBody(validationResult, requestSessionId));
+    let eventsListRaw = await eventDB.getEvents(requestSessionId);
+    if (eventsListRaw) {
+      eventsListRaw.sort((a, b) => a.timestamp - b.timestamp);
+      // remove overhead data from event objects
+      const simpleEventsList = eventsListRaw.map((eventObj) => ({
+        event: eventObj.event,
+        sessionId: eventObj.sessionId,
+        timestamp: eventObj.timestamp,
+        playhead: eventObj.playhead,
+        duration: eventObj.duration,
+      }));
+      const validationResult = validator.validateEventOrder(simpleEventsList);
+      response.body = JSON.stringify(generateValidResponseBody(requestSessionId, simpleEventsList, validationResult));
     } else {
       response.body = JSON.stringify(generateInvalidResponseBody(requestSessionId));
     }
