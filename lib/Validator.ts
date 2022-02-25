@@ -1,6 +1,5 @@
 import winston from 'winston';
 import { TPlayerAnalyticsEvent, TBaseEvent } from '@eyevinn/player-analytics-specification';
-import { nextTick } from 'process';
 
 export type ValidatedEvent = TBaseEvent & {
   event: string;
@@ -9,7 +8,7 @@ export type ValidatedEvent = TBaseEvent & {
 export type ValidatorOutput = {
   valid: boolean;
   message?: string;
-  invalidEventIndex?: number | 0;
+  invalidEventIndex?: number;
 };
 export type PAEventItem = {
   index: number;
