@@ -2,38 +2,25 @@ import * as main from '../services/lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import { DynamoDBAdapter } from '@eyevinn/player-analytics-shared';
-import { validTestSequences } from './test_event_sequences/valid';
-import { invalidTestSequences } from './test_event_sequences/invalid';
 
 const ddbMock = mockClient(DynamoDBClient);
 let request: any;
 
-const unsortedTestEvents = [
-  {
-    event: 'loading',
-    sessionId: '123-214-234',
-    timestamp: 1640193099,
-    playhead: 3,
-    duration: 3,
-    host: 'mock.eyevinn.technology',
-  },
-  {
-    event: 'loaded',
-    sessionId: '123-214-234',
-    timestamp: 1640195099,
-    playhead: 2,
-    duration: 2,
-    host: 'mock.eyevinn.technology',
-  },
-  {
-    event: 'init',
-    sessionId: '123-214-234',
-    timestamp: 1640191099,
-    playhead: 1,
-    duration: 1,
-    host: 'mock.eyevinn.technology',
-  },
-];
+const GenerateMockEventSequence = (eventNames: string[]) => {
+  const baseMockTimestamp = 1640201000;
+  let eventSequence: any = [];
+  for (let i = 0; i < eventNames.length; i++) {
+    eventSequence.push({
+      event: eventNames[i],
+      sessionId: '123-214-234',
+      timestamp: baseMockTimestamp + i,
+      playhead: 0,
+      duration: 0,
+      host: 'mock.eyevinn.technology',
+    });
+  }
+  return eventSequence;
+};
 
 describe('session-validator module', () => {
   beforeEach(() => {
@@ -63,282 +50,329 @@ describe('session-validator module', () => {
     delete process.env.TABLE_NAME;
   });
 
-  it('can validate Valid Event sequence correctly, example #1', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-      ],
-    };
-    spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(validTestSequences[0]);
-    });
-    const response = await main.handler(request);
-
-    expect(response.body).toEqual(
-      JSON.stringify({
+  it('can validate Valid Event sequences correctly', async () => {
+    // Arrange
+    const mockSequence = [
+      {
+        event: 'init',
         sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+        timestamp: 1640193000,
+        playhead: 0,
+        duration: 0,
+        host: 'mock.eyevinn.technology',
+      },
+      {
+        event: 'stopped',
+        sessionId: '123-214-234',
+        timestamp: 1640193001,
+        playhead: 0,
+        duration: 0,
+        host: 'mock.eyevinn.technology',
+      },
+    ];
+    spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
+      return Promise.resolve(mockSequence);
+    });
+    // Act
+    const response = await main.handler(request);
+    // Assert
+    const expectedResponse = {
+      sessionId: '123-214-234',
+      Events: [
+        {
+          event: 'init',
+          sessionId: '123-214-234',
+          timestamp: 1640193000,
+          playhead: 0,
+          duration: 0,
+        },
+        {
+          event: 'stopped',
+          sessionId: '123-214-234',
+          timestamp: 1640193001,
+          playhead: 0,
+          duration: 0,
+        },
+      ],
+      valid: true,
+    };
+
+    expect(response.body).toEqual(JSON.stringify(expectedResponse));
   });
 
   it('can validate Valid Event sequence correctly, example #2', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'error', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-      ],
-    };
-    spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(validTestSequences[1]);
-    });
-    const response = await main.handler(request);
+    // Arrange
+    let index = 0;
 
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    const validTestSequences = [
+      ['init', 'stopped'],
+      ['init', 'metadata', 'warning', 'error', 'stopped'],
+      ['init', 'loading', 'loaded', 'seeking', 'seeked', 'playing'],
+      ['metadata', 'init', 'loading', 'loaded', 'playing', 'bitrate_changed', 'stopped'],
+      ['init', 'loading', 'loaded', 'playing', 'seeking', 'seeked', 'paused', 'playing', 'stopped'],
+      ['init', 'loading', 'loaded', 'playing', 'buffering', 'seeking', 'seeked', 'paused', 'playing', 'stopped'],
+      ['init', 'loading', 'loaded', 'playing', 'buffering', 'paused', 'buffered', 'playing', 'stopped'],
+      ['init', 'loading', 'loaded', 'playing', 'seeking', 'paused', 'seeked', 'playing', 'stopped'],
+      ['init', 'warning', 'loading', 'heartbeat', 'loaded', 'metadata', 'error', 'stopped'],
+      ['init', 'heartbeat', 'heartbeat', 'heartbeat', 'heartbeat', 'heartbeat', 'heartbeat', 'heartbeat', 'heartbeat'],
+    ];
+
+    spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
+      return Promise.resolve(GenerateMockEventSequence(validTestSequences[index]));
+    });
+    for (let i = 0; i < validTestSequences.length; i++) {
+      // Act
+      const response = await main.handler(request);
+      // Assert
+      const responseJson = JSON.parse(response.body as string);
+      if (!responseJson.valid) console.log(responseJson);
+      expect(responseJson.valid).toEqual(true);
+      index++;
+    }
   });
 
-  it('can validate Valid Event sequence correctly, example #3', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeked', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: "init" is not first', async () => {
+    // Arrange
+    const testSequence = [
+      'metadata',
+      'metadata',
+      'loading',
+      'loaded',
+      'metadata',
+      'init',
+      'loading',
+      'stopped',
+      'metadata',
+    ];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(validTestSequences[2]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual(
+      "Faulty event sequence: 'init' is not the first event (except for 'metadata')"
     );
+    expect(responseJson.invalidEventIndex).toEqual(2);
   });
 
-  it('can validate Valid Event sequence correctly, example #4', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
-        { valid: true, event: 'paused', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
-        { valid: false, event: 'seeked', sessionId: '123-214-234', timestamp: 1640193006, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193007, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193008, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: an event follows "stopped"', async () => {
+    // Arrange
+    const testSequence = ['metadata', 'init', 'stopped', 'error'];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(validTestSequences[3]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'error' should not come after 'stopped'");
+    expect(responseJson.invalidEventIndex).toEqual(3);
   });
 
-  it('can validate Valid Event sequence correctly, example #5', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
-        { valid: true, event: 'buffering', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeked', sessionId: '123-214-234', timestamp: 1640193006, playhead: 0, duration: 0 },
-        { valid: true, event: 'paused', sessionId: '123-214-234', timestamp: 1640193007, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193008, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193009, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: "buffering" follows "seeking"', async () => {
+    // Arrange
+    const testSequence = [
+      'metadata',
+      'init',
+      'loading',
+      'loaded',
+      'seeking',
+      'warning',
+      'heartbeat',
+      'buffering',
+      'buffered',
+      'seeking',
+      'seeked',
+      'playing',
+      'paused',
+      'heartbeat',
+      'playing',
+      'warning',
+      'stopped',
+    ];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(validTestSequences[4]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'buffering' should not come after 'seeking'");
+    expect(responseJson.invalidEventIndex).toEqual(7);
   });
 
-  it('can validate Invalid Event sequence correctly, example #1', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: false, event: 'loading', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: false, event: 'init', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: "paused" has not come before non-first "playing"', async () => {
+    // Arrange
+    const testSequence = [
+      'init',
+      'loading',
+      'loaded',
+      'heartbeat',
+      'metadata',
+      'playing',
+      'seeking',
+      'warning',
+      'seeked',
+      'metadata',
+      'playing',
+      'stopped',
+    ];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(invalidTestSequences[0]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'playing' without a preceeding 'paused'");
+    expect(responseJson.invalidEventIndex).toEqual(10);
   });
 
-  it('can validate Invalid Event sequence correctly, example #2', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: false, event: 'error', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence when an Unknown event is found', async () => {
+    // Arrange
+    const testSequence = [
+      'init',
+      'loading',
+      'loaded',
+      'super-mock-event',
+      'playing',
+      'seeking',
+      'seeked',
+      'metadata',
+      'paused',
+      'stopped',
+    ];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(invalidTestSequences[1]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'super-mock-event' in not a supported event type");
+    expect(responseJson.invalidEventIndex).toEqual(3);
   });
 
-  it('can validate Invalid Event sequence correctly, example #3', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
-        { valid: false, event: 'buffering', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
-        { valid: true, event: 'buffered', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: "loading" appears more than once', async () => {
+    // Arrange
+    const testSequence = [
+      'init',
+      'loading',
+      'loaded',
+      'heartbeat',
+      'loading',
+      'playing',
+      'seeking',
+      'seeked',
+      'metadata',
+      'paused',
+      'stopped',
+    ];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(invalidTestSequences[2]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'loading' should only occur once per session");
+    expect(responseJson.invalidEventIndex).toEqual(4);
   });
 
-  it('can validate Invalid Event sequence correctly, example #4', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
-        { valid: false, event: 'playing', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
-        { valid: true, event: 'paused', sessionId: '123-214-234', timestamp: 1640193006, playhead: 0, duration: 0 },
-        { valid: false, event: 'seeked', sessionId: '123-214-234', timestamp: 1640193007, playhead: 0, duration: 0 }, // seeded after pause?
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193008, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193009, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: "loaded" appears more than once', async () => {
+    // Arrange
+    const testSequence = [
+      'init',
+      'loading',
+      'loaded',
+      'heartbeat',
+      'metadata',
+      'loaded',
+      'playing',
+      'seeking',
+      'seeked',
+      'metadata',
+      'paused',
+      'stopped',
+    ];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(invalidTestSequences[3]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'loaded' should only occur once per session");
+    expect(responseJson.invalidEventIndex).toEqual(5);
   });
 
-  it('can validate Invalid Event sequence correctly, example #5', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193000, playhead: 0, duration: 0 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193001, playhead: 0, duration: 0 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193002, playhead: 0, duration: 0 },
-        { valid: false, event: 'unknown', sessionId: '123-214-234', timestamp: 1640193003, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193004, playhead: 0, duration: 0 },
-        { valid: false, event: 'buffered', sessionId: '123-214-234', timestamp: 1640193005, playhead: 0, duration: 0 },
-        { valid: true, event: 'seeking', sessionId: '123-214-234', timestamp: 1640193006, playhead: 0, duration: 0 },
-        { valid: false, event: 'buffering', sessionId: '123-214-234', timestamp: 1640193007, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193008, playhead: 0, duration: 0 },
-        { valid: false, event: 'loading', sessionId: '123-214-234', timestamp: 1640193009, playhead: 0, duration: 0 },
-        { valid: true, event: 'metadata', sessionId: '123-214-234', timestamp: 1640193010, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: "error" appears more than once', async () => {
+    // Arrange
+    const testSequence = [
+      'init',
+      'loading',
+      'loaded',
+      'heartbeat',
+      'metadata',
+      'playing',
+      'warning',
+      'paused',
+      'error',
+      'heartbeat',
+      'error',
+      'stopped',
+    ];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(invalidTestSequences[4]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'error' should only occur once per session");
+    expect(responseJson.invalidEventIndex).toEqual(10);
   });
 
-  it('can validate Invalid Event sequence correctly, example #6', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640193010, playhead: 0, duration: 0 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193020, playhead: 0, duration: 0 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193030, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193040, playhead: 0, duration: 0 },
-        { valid: true, event: 'error', sessionId: '123-214-234', timestamp: 1640193050, playhead: 0, duration: 0 },
-        { valid: true, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193060, playhead: 0, duration: 0 },
-        { valid: false, event: 'init', sessionId: '123-214-234', timestamp: 1640193061, playhead: 0, duration: 0 },
-        { valid: false, event: 'loading', sessionId: '123-214-234', timestamp: 1640193062, playhead: 0, duration: 0 },
-        { valid: false, event: 'loaded', sessionId: '123-214-234', timestamp: 1640193063, playhead: 0, duration: 0 },
-        { valid: true, event: 'playing', sessionId: '123-214-234', timestamp: 1640193070, playhead: 0, duration: 0 },
-        { valid: false, event: 'error', sessionId: '123-214-234', timestamp: 1640193072, playhead: 0, duration: 0 },
-        { valid: false, event: 'stopped', sessionId: '123-214-234', timestamp: 1640193080, playhead: 0, duration: 0 },
-      ],
-    };
+  it('should invalidate Event sequence where: "stopped" appears more than once', async () => {
+    // Arrange
+    const testSequence = ['init', 'loading', 'loaded', 'metadata', 'playing', 'stopped', 'metadata', 'stopped'];
+    const invalidEventSequences = GenerateMockEventSequence(testSequence);
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
-      return Promise.resolve(invalidTestSequences[5]);
+      return Promise.resolve(invalidEventSequences);
     });
+    // Act
     const response = await main.handler(request);
-    expect(response.body).toEqual(
-      JSON.stringify({
-        sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
-      })
-    );
+    // Assert
+    const responseJson = JSON.parse(response.body as string);
+    expect(responseJson.valid).toEqual(false);
+    expect(responseJson.message).toEqual("Faulty event sequence: 'stopped' should only occur once per session");
+    expect(responseJson.invalidEventIndex).toEqual(7);
   });
 
   it('can sort and validate a list of events', async () => {
-    const expectedValidatedEvents = {
-      Events: [
-        { valid: true, event: 'init', sessionId: '123-214-234', timestamp: 1640191099, playhead: 1, duration: 1 },
-        { valid: true, event: 'loading', sessionId: '123-214-234', timestamp: 1640193099, playhead: 3, duration: 3 },
-        { valid: true, event: 'loaded', sessionId: '123-214-234', timestamp: 1640195099, playhead: 2, duration: 2 },
-      ],
-    };
+    const unsortedTestEvents = [
+      { event: 'loaded', sessionId: '123-214-234', timestamp: 1640195099, playhead: 1, duration: 8, host: 'mock' },
+      { event: 'loading', sessionId: '123-214-234', timestamp: 1640193099, playhead: 2, duration: 8, host: 'mock' },
+      { event: 'init', sessionId: '123-214-234', timestamp: 1640191099, playhead: 3, duration: 8, host: 'mock' },
+    ];
     spyOn(DynamoDBAdapter.prototype, 'getItemsBySession').and.callFake(function () {
       return Promise.resolve(unsortedTestEvents);
     });
@@ -347,7 +381,12 @@ describe('session-validator module', () => {
     expect(response.body).toEqual(
       JSON.stringify({
         sessionId: '123-214-234',
-        Events: expectedValidatedEvents.Events,
+        Events: [
+          { event: 'init', sessionId: '123-214-234', timestamp: 1640191099, playhead: 3, duration: 8 },
+          { event: 'loading', sessionId: '123-214-234', timestamp: 1640193099, playhead: 2, duration: 8 },
+          { event: 'loaded', sessionId: '123-214-234', timestamp: 1640195099, playhead: 1, duration: 8 },
+        ],
+        valid: true,
       })
     );
   });
@@ -367,6 +406,6 @@ describe('session-validator module', () => {
 
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
-    expect(response.body).toEqual('{"sessionId":"123-214-234","message":"Cannot get events from DB"}');
+    expect(response.body).toEqual('{"sessionId":"123-214-234","message":"Failed getting Events from DB"}');
   });
 });
