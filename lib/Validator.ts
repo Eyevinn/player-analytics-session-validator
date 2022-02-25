@@ -101,7 +101,9 @@ export default class Validator {
     let output: ValidatorOutput = {
       valid: true,
     };
-    if (!eventsList) return eventsList;
+    if (!eventsList || eventsList.length === 0) {
+      return { valid: true };
+    }
     this.logger.debug(`Number of events: ${eventsList.length}`);
     // Filter out all 'metadata' events.
     // Necessary since 'metadata' is a wildcard

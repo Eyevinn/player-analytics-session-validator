@@ -18,6 +18,7 @@ fastify.get('/session/:sessionId', async (request, reply) => {
   }
   const validator = new Validator(Logger);
   const eventDB = new EventDB(Logger);
+  // (dev): To read from different table, enter your table of choice as the 2nd argument of .getEvents()
   const eventsListRaw = await eventDB.getEvents(sessionId, `epas_${request.headers['host']}`);
   let responseBody;
   if (eventsListRaw) {
