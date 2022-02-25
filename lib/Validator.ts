@@ -11,7 +11,7 @@ export type ValidatorOutput = {
   message?: string;
   invalidEventIndex?: number | 0;
 };
-export type TPAEventItem = {
+export type PAEventItem = {
   index: number;
   PAEvent: TPlayerAnalyticsEvent;
 };
@@ -107,7 +107,7 @@ export default class Validator {
     this.logger.debug(`Number of events: ${eventsList.length}`);
     // Filter out all 'metadata' events.
     // Necessary since 'metadata' is a wildcard
-    const filteredEvents: TPAEventItem[] = eventsList
+    const filteredEvents: PAEventItem[] = eventsList
       .map((PAEvent: TPlayerAnalyticsEvent, index: number) => {
         if (PAEvent.event === 'metadata') {
           return { index: -1, PAEvent: PAEvent };
