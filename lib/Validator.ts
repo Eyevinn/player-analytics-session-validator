@@ -148,7 +148,7 @@ export default class Validator {
             // Check if next Event is unknown
             if (!this.events[nextEvent.event]) {
               output.valid = false;
-              output.message = generateErrorMessage(`'${nextEvent.event}' in not a supported event type`);
+              output.message = generateErrorMessage(`'${nextEvent.event}' is not a supported event type`);
               output.invalidEventIndex = filteredEvents[nextIdx].index;
               break;
             }
