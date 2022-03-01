@@ -207,7 +207,7 @@ export default class Validator {
       return true;
     }
     if (event === 'playing') {
-      if (this.prevPlayPauseStatus === PlayPauseStatus.PAUSED || this.prevPlayPauseStatus === PlayPauseStatus.NONE) {
+      if ([PlayPauseStatus.PAUSED, PlayPauseStatus.NONE].includes(this.prevPlayPauseStatus)) {
         this.prevPlayPauseStatus = PlayPauseStatus.PLAYING;
         return false;
       }
