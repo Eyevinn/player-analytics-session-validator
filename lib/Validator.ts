@@ -10,10 +10,18 @@ export type ValidatorOutput = {
   message?: string;
   invalidEventIndex?: number;
 };
+
 export type PAEventItem = {
   index: number;
   PAEvent: TPlayerAnalyticsEvent;
 };
+
+export enum PlayPauseStatus {
+  'NONE',
+  'PLAYING',
+  'PAUSED',
+}
+
 const generateErrorMessage = (msg: string) => {
   return 'Faulty event sequence: ' + msg;
 };
@@ -23,11 +31,11 @@ export default class Validator {
   events: any;
   singleAppearanceEvents: {};
   output: ValidatorOutput;
-  prevPausedOrPlaying: string;
+  prevPlayPauseStatus: PlayPauseStatus;
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
-    this.prevPausedOrPlaying = 'none';
+    this.prevPlayPauseStatus = PlayPauseStatus.NONE;
     // Event name : current appearences count
     this.singleAppearanceEvents = {
       init: 0,
@@ -185,22 +193,22 @@ export default class Validator {
       this.logger.error(error);
     }
 
-    this.prevPausedOrPlaying = 'none';
+    this.prevPlayPauseStatus = PlayPauseStatus.NONE;
 
     return output;
   }
 
   _invalidPausedPlayingEvent = (event: string): boolean => {
     if (event === 'paused') {
-      if (this.prevPausedOrPlaying === 'playing') {
-        this.prevPausedOrPlaying = 'paused';
+      if (this.prevPlayPauseStatus === PlayPauseStatus.PLAYING) {
+        this.prevPlayPauseStatus = PlayPauseStatus.PAUSED;
         return false;
       }
       return true;
     }
     if (event === 'playing') {
-      if (this.prevPausedOrPlaying === 'paused' || this.prevPausedOrPlaying === 'none') {
-        this.prevPausedOrPlaying = 'playing';
+      if (this.prevPlayPauseStatus === PlayPauseStatus.PAUSED || this.prevPlayPauseStatus === PlayPauseStatus.NONE) {
+        this.prevPlayPauseStatus = PlayPauseStatus.PLAYING;
         return false;
       }
       return true;
