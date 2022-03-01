@@ -134,10 +134,7 @@ export default class Validator {
           let nextIdx = i + 1;
           let nextEvent = filteredEvents[nextIdx].PAEvent;
           // Skip 'warning' & 'heartbeat' events. Select the next event that is not one of them.
-          while (
-            nextIdx < filteredEvents.length - 1 &&
-            (nextEvent.event === 'warning' || nextEvent.event === 'heartbeat')
-          ) {
+          while (nextIdx < filteredEvents.length - 1 && ['warning', 'heartbeat'].includes(nextEvent.event)) {
             nextIdx++;
             nextEvent = filteredEvents[nextIdx].PAEvent;
           }
