@@ -24,6 +24,9 @@ The simplest way to run a session validator locally is to use the fastify servic
 
 e.g. `DB_TYPE=MONGODB` `npm run dev` will start a fastify service towards your local MongoDB as database.
 
+If you are attempting to read from a DynamoDB then you will need to specify your AWS credentials and region as well
+
+e.g. `DB_TYPE=DYNAMODB` `AWS_PROFILE=my-account` `AWS_REGION=eu-north-1` `npm run dev`
 # About Eyevinn Technology
 
 Eyevinn Technology is an independent consultant firm specialized in video and streaming. Independent in a way that we are not commercially tied to any platform or technology vendor.
