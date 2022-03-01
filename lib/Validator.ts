@@ -122,58 +122,57 @@ export default class Validator {
         output.invalidEventIndex = filteredEvents[0].index;
       } else {
         let i = 0;
-        while (i < filteredEvents.length) {
+        while (i < filteredEvents.length - 1) {
           let nextIdx = i + 1;
-          if (i !== filteredEvents.length - 1) {
-            let nextEvent = filteredEvents[nextIdx].PAEvent;
-            // Skip 'warning' & 'heartbeat' events. Select the next event that is not one of them.
-            while (
-              nextIdx < filteredEvents.length - 1 &&
-              (nextEvent.event === 'warning' || nextEvent.event === 'heartbeat')
-            ) {
-              nextIdx++;
-              nextEvent = filteredEvents[nextIdx].PAEvent;
-            }
-            // Check if next Event is only allowed to appear once
-            if (this.singleAppearanceEvents[nextEvent.event] !== undefined) {
-              this.singleAppearanceEvents[nextEvent.event]++;
-              const currentCount = this.singleAppearanceEvents[nextEvent.event];
-              if (currentCount > 1) {
-                output.valid = false;
-                output.message = generateErrorMessage(`'${nextEvent.event}' should only occur once per session`);
-                output.invalidEventIndex = filteredEvents[nextIdx].index;
-                break;
-              }
-            }
-            // Check if next Event is unknown
-            if (!this.events[nextEvent.event]) {
+          let nextEvent = filteredEvents[nextIdx].PAEvent;
+          // Skip 'warning' & 'heartbeat' events. Select the next event that is not one of them.
+          while (
+            nextIdx < filteredEvents.length - 1 &&
+            (nextEvent.event === 'warning' || nextEvent.event === 'heartbeat')
+          ) {
+            nextIdx++;
+            nextEvent = filteredEvents[nextIdx].PAEvent;
+          }
+          // Check if next Event is only allowed to appear once
+          if (this.singleAppearanceEvents[nextEvent.event] !== undefined) {
+            this.singleAppearanceEvents[nextEvent.event]++;
+            const currentCount = this.singleAppearanceEvents[nextEvent.event];
+            if (currentCount > 1) {
               output.valid = false;
-              output.message = generateErrorMessage(`'${nextEvent.event}' is not a supported event type`);
-              output.invalidEventIndex = filteredEvents[nextIdx].index;
-              break;
-            }
-            // Special Case: Paused/Playing rules
-            else if (this._invalidPausedPlayingEvent(nextEvent.event)) {
-              output.valid = false;
-              output.message = generateErrorMessage(
-                `'${nextEvent.event}' without a preceeding '${nextEvent.event === 'playing' ? 'paused' : 'playing'}'`
-              );
-              output.invalidEventIndex = filteredEvents[nextIdx].index;
-              break;
-            }
-            // Check if next Event is not suppose to be after current
-            else if (
-              this.events[filteredEvents[i].PAEvent['event']] &&
-              this.events[filteredEvents[i].PAEvent['event']].includes(nextEvent.event)
-            ) {
-              output.valid = false;
-              output.message = generateErrorMessage(
-                `'${nextEvent.event}' should not come after '${filteredEvents[i].PAEvent['event']}'`
-              );
+              output.message = generateErrorMessage(`'${nextEvent.event}' should only occur once per session`);
               output.invalidEventIndex = filteredEvents[nextIdx].index;
               break;
             }
           }
+          // Check if next Event is unknown
+          if (!this.events[nextEvent.event]) {
+            output.valid = false;
+            output.message = generateErrorMessage(`'${nextEvent.event}' is not a supported event type`);
+            output.invalidEventIndex = filteredEvents[nextIdx].index;
+            break;
+          }
+          // Special Case: Paused/Playing rules
+          else if (this._invalidPausedPlayingEvent(nextEvent.event)) {
+            output.valid = false;
+            output.message = generateErrorMessage(
+              `'${nextEvent.event}' without a preceeding '${nextEvent.event === 'playing' ? 'paused' : 'playing'}'`
+            );
+            output.invalidEventIndex = filteredEvents[nextIdx].index;
+            break;
+          }
+          // Check if next Event is not suppose to be after current
+          else if (
+            this.events[filteredEvents[i].PAEvent['event']] &&
+            this.events[filteredEvents[i].PAEvent['event']].includes(nextEvent.event)
+          ) {
+            output.valid = false;
+            output.message = generateErrorMessage(
+              `'${nextEvent.event}' should not come after '${filteredEvents[i].PAEvent['event']}'`
+            );
+            output.invalidEventIndex = filteredEvents[nextIdx].index;
+            break;
+          }
+
           // Incremet
           if (nextIdx !== i + 1) {
             i = nextIdx;

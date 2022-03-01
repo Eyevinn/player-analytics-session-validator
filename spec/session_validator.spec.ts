@@ -261,7 +261,7 @@ describe('session-validator module', () => {
     // Assert
     const responseJson = JSON.parse(response.body as string);
     expect(responseJson.valid).toEqual(false);
-    expect(responseJson.message).toEqual("Faulty event sequence: 'super-mock-event' in not a supported event type");
+    expect(responseJson.message).toEqual("Faulty event sequence: 'super-mock-event' is not a supported event type");
     expect(responseJson.invalidEventIndex).toEqual(3);
   });
 
