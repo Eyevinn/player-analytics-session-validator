@@ -21,10 +21,10 @@ jobs:
           PUBLISH_PACKAGES: ${{ secrets.PUBLISH_PACKAGES }}
           CI: true
         run:
-          npm ci --only=prod
-          npm run build --if-present
+          npm install
+          npm run build
       - name: Move node_modules to build folder
-        run: mv node_modules build/
+        run: mv node_modules build/node_modules
       - name: install zip
         uses: montudor/action-zip@v0.1.0
       - name: zip
